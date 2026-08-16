@@ -49,6 +49,41 @@ echo "\nDisk Usage (df):\n"
 
 df -h
 
+printf "\nDetailed Partition Table (fdisk)\n"
+
+fdisk -l
+
+printf "\nChecking Peripheral Interconnect devices PCI (lspci)\n"
+
+lspci -v
+
+printf "\nListing USB devices (lsusb)\n"
+
+lsusb
+
+printf "\nWhat hardware is loaded as drivers\n"
+
+lsmod
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
