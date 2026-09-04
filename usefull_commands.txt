@@ -1,0 +1,9 @@
+
+cat /proc/[PID]/maps -> used to see process memory layout
+pmap -x $$
+
+strace -> used to the syscalls made when executing the binary
+[NOTE]
+the kernel stack is intentionally small because each thread has its kernal stack (with milions of threads running it will be huge memory consumption) 
+strace -c binary -> to count syscalls
+
