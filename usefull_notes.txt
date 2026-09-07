@@ -1,0 +1,59 @@
+
+cat /proc/[PID]/maps -> used to see process memory layout
+pmap -x $$
+[NOTE]
+strace -> used to the syscalls made when executing the binary
+# Basic usage:
+strace command
+strace ls /tmp
+
+# Trace a running process:
+strace -p PID
+
+# Count syscalls (performance summary):
+strace -c command
+# Output like:
+# % time  seconds  usecs/call  calls  errors  syscall
+# ──────  ───────  ──────────  ─────  ──────  ───────
+#  46.15    0.001         73     19          mmap
+#  15.38    0.000         31      5          read
+#  ...
+
+# Filter to specific syscalls:
+strace -e trace=open,read,write,close ls /tmp
+strace -e trace=network,ipc curl https://example.com
+
+# Show timestamps:
+strace -t command        # Absolute time
+strace -tt command       # With microseconds
+strace -T command        # Time spent in each syscall
+
+# Follow children (processes created by fork/exec):
+strace -f command
+strace -ff -o strace-output command  # Separate output per PID
+
+# Show signal receipt:
+strace -e signal=all command
+
+# Filter by error:
+strace -e trace=all -e fault=read:error=ENOMEM command  # Inject errors
+
+# Practical examples:
+
+# Debug a failing nginx:
+sudo strace -p $(pgrep nginx | head -1) -e trace=file 2>&1 | head -20
+
+# See what config files a program reads at startup:
+strace -e openat,open -f ./myprogram 2>&1 | grep "O_RDONLY"
+
+# Debug network connections:
+strace -e trace=network -f ./myprogram 2>&1
+
+# Find why a program is slow (time each syscall):
+strace -T -e trace=all ./slowprogram 2>&1 | sort -t'<' -k2 -rn | head -20
+[NOTE]
+the kernel stack is intentionally small because each thread has its kernal stack (with milions of threads running it will be huge memory consumption) 
+strace -c binary -> to count syscalls
+
+[NOTE]
+The kernel is in every process's address space
