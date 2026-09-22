@@ -57,3 +57,20 @@ strace -c binary -> to count syscalls
 
 [NOTE]
 The kernel is in every process's address space
+
+[NOTE]
+Initramfs contains the minimal userspace needed to mount the real roout filesystem.
+Without it the kernel should contains some specific hardware programs instead of being generic.
+Initramfs is system specific.
+
+
+
+
+
+
+
+
+
+
+
+
