@@ -1,0 +1,28 @@
+#this File should placed under /etc/systemd/system , /usr/lib/systemd...
+[Unit]
+Description=Small Service for Test
+After=network.target
+
+
+[Service]
+Type=simple
+User=nobody
+Group=nogroup
+WorkingDirectory=/tmp
+ExecStart=/usr/bin/python3 /path/toyour/pythonServer
+Environment="PORT=9999"
+Restart=on-failure
+RestartSec=5s
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifer=demo
+
+
+#Security hardening
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target
+
+

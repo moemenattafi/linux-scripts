@@ -1,0 +1,109 @@
+# /etc/systemd/system/myapp.service
+# A comprehensive example showing most common options
+
+[Unit]
+# Description shown in systemctl status and journalctl
+Description=My Application Server
+
+# Documentation (shown by systemctl help myapp)
+Documentation=https://docs.example.com/
+
+# Dependencies - other units that MUST be active for this unit:
+Requires=postgresql.service
+Requires=redis.service
+
+# Dependencies - units that SHOULD be active (start them, but don't fail if they fail):
+Wants=network-online.target
+
+# Ordering - start After these units are active:
+After=network-online.target
+After=postgresql.service
+After=redis.service
+
+# Ordering - start Before these units:
+# Before=some-other.service
+
+# If the unit this unit After= starts before database, conflict:
+# Conflicts=postgresql.service  # (example only)
+
+# React to events:
+# BindsTo=device.service  # Stop if device.service stops
+
+
+[Service]
+# Service type:
+# simple     (default) - Process started by ExecStart is the service
+# forking    - ExecStart forks, parent exits (traditional daemon model)
+# oneshot    - Process runs once and exits (ExecStart= can have multiple)
+# notify     - Service sends sd_notify() when ready
+# dbus       - Service registers on D-Bus bus when ready
+# idle       - Start after all other jobs dispatched
+Type=notify
+
+# User and group to run as:
+User=myapp
+Group=myapp
+
+# Working directory:
+WorkingDirectory=/opt/myapp
+
+# Environment variables:
+Environment="MYAPP_ENV=production"
+Environment="MYAPP_PORT=8080"
+# Or load from a file:
+EnvironmentFile=/etc/myapp/myapp.conf
+
+# Commands:
+ExecStartPre=/usr/bin/myapp --check-config  # Run before ExecStart
+ExecStart=/usr/bin/myapp --config /etc/myapp/app.conf
+ExecStartPost=/usr/bin/myapp --post-start-check  # After start
+ExecStop=/bin/kill -SIGTERM $MAINPID          # Override default SIGTERM
+ExecReload=/bin/kill -HUP $MAINPID           # For systemctl reload
+
+# Restart policy:
+Restart=on-failure         # Restart if exits with non-zero code
+# Other options: always, on-abnormal, on-watchdog, on-abort, never
+RestartSec=5s              # Wait 5 seconds before restarting
+StartLimitInterval=300s    # Over 300 seconds...
+StartLimitBurst=5          # Allow at most 5 restarts
+
+# Resource limits:
+LimitNOFILE=65536          # Maximum open files
+LimitNPROC=4096            # Maximum processes
+MemoryMax=2G               # Absolute memory limit (cgroup)
+CPUWeight=100              # CPU scheduling weight
+IOWeight=100               # I/O scheduling weight
+Nice=-5                    # Process priority (-20 to 19)
+
+# Security:
+NoNewPrivileges=yes        # Process cannot gain more privileges
+PrivateTmp=yes             # Private /tmp and /var/tmp
+ProtectSystem=strict       # /usr, /boot, /etc are read-only
+ProtectHome=yes            # /home, /root, /run/user are inaccessible
+ReadWritePaths=/var/lib/myapp /var/log/myapp  # Explicitly allow writes here
+
+# Watchdog:
+WatchdogSec=30s            # Kill and restart if no watchdog ping in 30s
+
+# Logging:
+StandardOutput=journal     # stdout → systemd journal
+StandardError=journal      # stderr → systemd journal
+SyslogIdentifier=myapp     # Tag in journal
+
+# Cleanup:
+TimeoutStartSec=90s        # Fail if not started within 90s
+TimeoutStopSec=30s         # Force kill after 30s if stop doesn't work
+
+# Temporary files:
+RuntimeDirectory=myapp     # Creates /run/myapp, owned by User=
+StateDirectory=myapp       # Creates /var/lib/myapp, owned by User=
+LogsDirectory=myapp        # Creates /var/log/myapp, owned by User=
+CacheDirectory=myapp       # Creates /var/cache/myapp, owned by User=
+
+
+[Install]
+# Which target should this be started under:
+WantedBy=multi-user.target  # Start when reaching multi-user (non-graphical) mode
+
+# Aliases for this unit:
+# Alias=web-server.service
