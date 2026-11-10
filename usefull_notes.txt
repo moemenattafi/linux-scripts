@@ -63,14 +63,50 @@ Initramfs contains the minimal userspace needed to mount the real roout filesyst
 Without it the kernel should contains some specific hardware programs instead of being generic.
 Initramfs is system specific.
 
+[NOTE]
+[VIRTUAL_FILE_SYSTEM]
+- A dentry (directory entry) maps a filename to inode
+- A dcache (dentry cache) used to avoid repeated disk lookups
+- time + command : counts the time spent taken by the command
+- A file object repsents an open file (created when a file is opened, destroyed when closed), it tracks:
+    The inode (what file is open)
+    The current position (file offset)
+    Access mode (O_RDONLY, O_WRONLY, etc.)
+    A pointer to file operations (f_op)
+- Page cache most important component in linux performance
+- The page cache is the reason why linux systems seem to use all the RAM, all unused RAM becomes a page cache. 
+[OPEN_VFS_STEPS]
+1. Kernel receives openat() syscall
 
+2. Path resolution starts at '/' (or CWD for relative paths):
+   - Look up '/' in dentry cache → hit (root dentry always cached)
+   - Check permissions on '/' (x bit for current user)
+   
+3. Resolve 'home':
+   - Look up 'home' in dentry cache under '/'
+   - If hit: use cached inode
+   - If miss: call filesystem's lookup() → reads directory from disk
+   - Check permissions (x bit to traverse)
+   
+4. Resolve 'alice':
+   - Same as above under 'home' inode
+   - Check permissions
+   
+5. Resolve 'document.txt':
+   - Look up in 'alice' directory
+   - Get inode 11111
+   - Check permissions (r bit for O_RDONLY)
+   
+6. Create file object:
+   - Allocate struct file
+   - Set f_inode = inode 11111
+   - Set f_pos = 0
+   - Set f_op = inode->i_fop (file operations table)
+   
+7. Call filesystem's open() method (if any):
+   - e.g., ext4_file_open()
+   
+8. Assign file descriptor number to file object
 
-
-
-
-
-
-
-
-
+9. Return fd to user space
 
